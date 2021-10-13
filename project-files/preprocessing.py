@@ -29,15 +29,15 @@ def main():
 
     # ---------- RESHAPING ---------- #
     # Removing sample ID column and resetting column indices
-    preprocessed = raw
-    del preprocessed[0]
-    preprocessed.columns = range(preprocessed.shape[1])
-    print(preprocessed.head())
+    cleaned = raw
+    del cleaned[0]
+    cleaned.columns = range(cleaned.shape[1])
+    print(cleaned.head())
 
     # ---------- REMOVING SAMPLE BIAS ---------- #
     # Splitting data into two dataframes, one with benign and the other with malignant samples
-    benign = preprocessed[preprocessed[0] == "B"]
-    malignant = preprocessed[preprocessed[0] == "M"]
+    benign = cleaned[cleaned[0] == "B"]
+    malignant = cleaned[cleaned[0] == "M"]
 
     # Calculating number of samples to remove and re-balancing
     remove_count = len(benign) - len(malignant)
@@ -46,15 +46,18 @@ def main():
     benign = benign.drop(indices)
 
     # Combining data back together and shuffling to randomly intermix benign and malignant samples
-    preprocessed = benign.append(malignant, ignore_index=True)
-    preprocessed = preprocessed.sample(frac=1).reset_index(drop=True)
-    preprocessed.columns = range(preprocessed.shape[1])
-    print(preprocessed.head())
-    print(preprocessed.shape)
+    cleaned = benign.append(malignant, ignore_index=True)
+    cleaned = cleaned.sample(frac=1).reset_index(drop=True)
+    cleaned.columns = range(cleaned.shape[1])
+    print(cleaned.head())
+    print(cleaned.shape)
+
+    # ---------- EXPORTING CLEANED DATA ---------- #
+    cleaned.to_csv("../data/processed/full.csv", header=False, index=False)
 
     # ---------- SCALING THE DATA ---------- #
     # Splitting off real-valued features
-    numeric = preprocessed.iloc[:, 1:31]
+    numeric = cleaned.iloc[:, 1:31]
 
     # Scaling selected features
     scaler = preprocessing.MinMaxScaler()
@@ -64,15 +67,15 @@ def main():
     print(scaled.head())
 
     # Recombining scaled features with labels and resetting indices
-    preprocessed = pd.concat([preprocessed[0], scaled], axis=1)
-    preprocessed.columns = range(preprocessed.shape[1])
+    scaled = pd.concat([cleaned[0], scaled], axis=1)
+    scaled.columns = range(scaled.shape[1])
 
     # Examining scaled data
-    print(preprocessed.head())
-    print(preprocessed.shape)
+    print(scaled.head())
+    print(scaled.shape)
 
-    # ---------- EXPORTING PREPROCESSED DATA ---------- #
-    preprocessed.to_csv("../data/processed/full.csv", header=False, index=False)
+    # ---------- EXPORTING SCALED DATA ---------- #
+    scaled.to_csv("../data/processed/full-scaled.csv", header=False, index=False)
 
 
 if __name__ == "__main__":
