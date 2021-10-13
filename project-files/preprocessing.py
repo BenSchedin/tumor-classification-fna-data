@@ -7,9 +7,12 @@
 
 """
 
+import random
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -27,14 +30,13 @@ def main():
     # Checking for sample bias
     print(raw[1].value_counts())
 
-    # ---------- RESHAPING ---------- #
+    # ---------- RESHAPING AND REMOVING SAMPLE BIAS ---------- #
     # Removing sample ID column and resetting column indices
     cleaned = raw
     del cleaned[0]
     cleaned.columns = range(cleaned.shape[1])
     print(cleaned.head())
 
-    # ---------- REMOVING SAMPLE BIAS ---------- #
     # Splitting data into two dataframes, one with benign and the other with malignant samples
     benign = cleaned[cleaned[0] == "B"]
     malignant = cleaned[cleaned[0] == "M"]
@@ -52,7 +54,7 @@ def main():
     print(cleaned.head())
     print(cleaned.shape)
 
-    # ---------- EXPORTING CLEANED DATA ---------- #
+    # Exporting cleaned data
     cleaned.to_csv("../data/processed/full.csv", header=False, index=False)
 
     # ---------- SCALING THE DATA ---------- #
@@ -60,7 +62,7 @@ def main():
     numeric = cleaned.iloc[:, 1:31]
 
     # Scaling selected features
-    scaler = preprocessing.MinMaxScaler()
+    scaler = preprocessing.StandardScaler()
     scaler.fit(numeric)
     scaled = scaler.transform(numeric)
     scaled = pd.DataFrame(scaled)
@@ -74,8 +76,28 @@ def main():
     print(scaled.head())
     print(scaled.shape)
 
-    # ---------- EXPORTING SCALED DATA ---------- #
+    # Exporting scaled data
     scaled.to_csv("../data/processed/full-scaled.csv", header=False, index=False)
+
+    # ---------- APPLYING PCA TO THE DATA ---------- #
+    # Splitting off real-valued features
+    numeric = scaled.iloc[:, 1:31]
+
+    # Applying PCA to the selected features
+    pca_solver = PCA(n_components=30, svd_solver="auto")
+    components = pca_solver.fit_transform(numeric)
+    pca = pd.DataFrame(components)
+
+    # Recombining components with labels and resetting indices
+    pca = pd.concat([scaled[0], pca], axis=1)
+    pca.columns = range(pca.shape[1])
+
+    # Examining PCA data
+    print(pca.head())
+    print(pca.shape)
+
+    # Exporting PCA data
+    pca.to_csv("../data/processed/full-pca.csv", header=False, index=False)
 
 
 if __name__ == "__main__":
