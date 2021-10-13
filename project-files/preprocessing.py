@@ -96,6 +96,14 @@ def main():
     print(pca.head())
     print(pca.shape)
 
+    # Plotting component variance
+    component_values = np.arange(pca_solver.n_components_) + 1
+    plt.plot(component_values, pca_solver.explained_variance_ratio_, "ro-", linewidth=2)
+    plt.title("Scree Plot")
+    plt.xlabel("Component")
+    plt.ylabel("Variance Explained")
+    plt.savefig("../figures/pca-variance.png", format="png")
+
     # Exporting PCA data
     pca.to_csv("../data/processed/full-pca.csv", header=False, index=False)
 
