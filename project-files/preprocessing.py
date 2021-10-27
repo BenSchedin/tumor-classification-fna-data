@@ -97,8 +97,9 @@ def main():
     print(pca.shape)
 
     # Plotting component variance
-    component_values = np.arange(pca_solver.n_components_) + 1
-    plt.plot(component_values, pca_solver.explained_variance_ratio_, "ro-", linewidth=2)
+    component_numbers = np.arange(pca_solver.n_components_) + 1
+    component_variance = pca_solver.explained_variance_ratio_
+    plt.plot(component_numbers, component_variance, "ro-", linewidth=2)
     plt.title("Scree Plot")
     plt.xlabel("Component")
     plt.ylabel("Variance Explained")
@@ -106,6 +107,12 @@ def main():
 
     # Exporting PCA data
     pca.to_csv("../data/processed/full-pca.csv", header=False, index=False)
+
+    # Selecting top 7 components with labels (elbow method)
+    pca7 = pca.iloc[:, 0:8]
+
+    # Exporting top components
+    pca7.to_csv("../data/processed/pca7.csv", header=False, index=False)
 
 
 if __name__ == "__main__":
